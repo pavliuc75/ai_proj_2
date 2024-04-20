@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 numpy = "*"
+sympy = "*"
 
 [dev-packages]
 
