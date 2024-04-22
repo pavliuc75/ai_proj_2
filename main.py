@@ -78,7 +78,9 @@ def include_belief(knowledge_base, new_belief):
 
 # Show all beliefs in the knowledge base
 def show_beliefs(knowledge_base):
+    print("--------------------------")
     print("Knowledge Base Contains:")
+    print("--------------------------")
     for belief in knowledge_base:
         print(belief)
 
@@ -90,10 +92,10 @@ def reset_beleifs(knowledge_base):
 # Function to capture the user's command
 def user_command():
     print("You can:")
-    print("1) add - Add a belief")
-    print("2) show - Show beliefs")
-    print("3) reset - Reset the belief base")
-    print("4) exit - Exit the program")
+    print("1) Add a belief")
+    print("2) Show beliefs")
+    print("3) Reset the belief base")
+    print("4) Exit the program")
     return input("Please choose an action: ").strip().lower()
 
 # Interpret and convert user input to a symbolic expression
@@ -106,18 +108,20 @@ def interact_with_agent():
     stop_agent = False
     while not stop_agent:
         user_choice = user_command()
-        if user_choice == "add":
+        if user_choice == "1":
+            print("-----------------------")
             belief_input = input("Enter the new belief: ")
+
             try:
                 belief_expr = interpret_belief(belief_input)
                 include_belief(knowledge_base, belief_expr)
             except SympifyError:
                 print("Could not interpret the belief.")
-        elif user_choice == "show":
+        elif user_choice == "2":
             show_beliefs(knowledge_base)
-        elif user_choice == "reset":
+        elif user_choice == "3":
             reset_beleifs(knowledge_base)
-        elif user_choice == "exit":
+        elif user_choice == "4":
             stop_agent = True
         else:
             print("Action not recognized")
