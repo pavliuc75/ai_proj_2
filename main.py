@@ -73,16 +73,15 @@ knowledge_base = []
 
 # Add a new belief to the knowledge base
 def include_belief(knowledge_base, new_belief):
-    updated_base = revise(And(*knowledge_base), new_belief) if knowledge_base else new_belief
-    knowledge_base.append(to_cnf(updated_base))
+    if knowledge_base:
+        knowledge_base = revise(knowledge_base, new_belief)
+    else:
+        knowledge_base = new_belief
 
 # Show all beliefs in the knowledge base
 def show_beliefs(knowledge_base):
-    print("--------------------------")
     print("Knowledge Base Contains:")
-    print("--------------------------")
-    for belief in knowledge_base:
-        print(belief)
+    print(knowledge_base)
 
 
 # Remove all beliefs from the knowledge base
