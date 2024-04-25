@@ -76,21 +76,22 @@ def include_belief(knowledge_base, new_belief):
     if knowledge_base:
         knowledge_base = revise(knowledge_base, new_belief)
     else:
-        knowledge_base = new_belief
+        knowledge_base.append(new_belief)
 
 # Show all beliefs in the knowledge base
 def show_beliefs(knowledge_base):
-    print("Knowledge Base Contains:")
+    print("\nKnowledge Base Contains:")
     print(knowledge_base)
 
 
 # Remove all beliefs from the knowledge base
 def reset_beleifs(knowledge_base):
+    print("\nResetting the knowledge base")
     knowledge_base.clear()
 
 # Function to capture the user's command
 def user_command():
-    print("You can:")
+    print("\nYou can:")
     print("1) Add a belief")
     print("2) Show beliefs")
     print("3) Reset the belief base")
