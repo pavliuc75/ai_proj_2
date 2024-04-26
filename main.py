@@ -180,7 +180,6 @@ def user_command():
     return input("Please choose an action: ").strip().lower()
 
 # Interpret and convert user input to a symbolic expression
-# Interpret and convert user input to a symbolic expression
 def interpret_belief(input_belief):
     belief_expr = sympify(str(input_belief))
     return belief_expr
