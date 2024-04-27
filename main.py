@@ -1,13 +1,17 @@
 from sympy import *
 from itertools import combinations
 
+import sympy
+
 
 #todo implementation of contraction of belief base (based on a priority order on formulas in the belief base);
 # , belief agent console version,
 # check agains agm postulates
 
 def pl_resolution(KB, alpha):  # same as in book figure 7.13
-    combined_cnf = And(to_cnf(KB), to_cnf(Not(alpha)))
+    KB = sympify(KB)
+    alpha = sympify(alpha)
+    combined_cnf = And(sympy.to_cnf(KB), sympy.to_cnf(Not(alpha)))
 
     clauses = set(combined_cnf.args)
     new_clauses = set()
@@ -74,7 +78,13 @@ knowledge_base = []
 # Add a new belief to the knowledge base
 def include_belief(knowledge_base, new_belief):
     if knowledge_base:
-        knowledge_base = revise(knowledge_base, new_belief)
+        # Combine all beliefs in the knowledge base into a single belief
+        combined_belief = And(*knowledge_base)
+        # Revise the combined belief with the new belief
+        revised_belief = revise(combined_belief, new_belief)
+        # Clear the knowledge base and add the revised belief to it
+        knowledge_base.clear()
+        knowledge_base.append(revised_belief)
     else:
         knowledge_base.append(new_belief)
 
