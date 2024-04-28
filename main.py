@@ -1,86 +1,67 @@
 from sympy import *
 from itertools import combinations
 
-class BeliefBase:
-    def __init__(self):
-        self.beliefs = set()
-
-    def add_belief(self, belief):
-        self.beliefs.add(belief)
-
-    def remove_belief(self, belief):
-        self.beliefs.discard(belief)
-
-    def display_beliefs(self):
-        print("Belief Base:")
-        for belief in self.beliefs:
-            print("-", belief)
-
-    def logical_entailment(self, statement):
-        for belief in self.beliefs:
-            if self._resolve(belief, statement):
-                return True
-        return False
+import sympy
 
 
-    def _resolve(self, belief, statement):
-    # Check if statement is entailed by belief using resolution-based reasoning
-        combined_cnf = And(to_cnf(belief), to_cnf(Not(statement)))
-        print("Combined CNF:", combined_cnf)  # Print the combined CNF for debugging purposes
-        result = combined_cnf == False
-        print("Result:", result)  # Print the result for debugging purposes
-        return result
+#todo implementation of contraction of belief base (based on a priority order on formulas in the belief base);
+# , belief agent console version,
+# Define the closure postulate function
+def closure(B, alpha, psi = None):
+    """Closure postulate: B ∗ alpha = Cn(B ∗ alpha)"""
+    return to_cnf(B + [alpha]) == to_cnf(B) + [alpha]
+
+# Define the success postulate function
+def success(B, alpha, psi = None):
+    """Success postulate: If alpha /∈ Cn(∅), then alpha /∈ Cn(B ∗ alpha)"""
+    return Not(alpha) not in to_cnf([])
+
+# Define the inclusion postulate function
+def inclusion(B, alpha, psi = None):
+    """Inclusion postulate: B ∗ alpha ⊆ B"""
+    return B + [alpha] == B
+
+# Define the vacuity postulate function
+def vacuity(B, alpha, psi = None):
+    """Vacuity postulate: If alpha /∈ Cn(B), then B ∗ alpha = B"""
+    return alpha not in to_cnf(B)
+
+# Define the consistency postulate function
+def consistency(B, alpha, psi = None):
+    """Consistency postulate: B ∗ alpha is consistent if alpha is consistent"""
+    return not to_cnf(B + [alpha]).equals(set())
+
+# Define the extensionality postulate function
+def extensionality(B, alpha, psi):
+    """Extensionality postulate: If (alpha ↔ psi) ∈ Cn(∅), then B ∗ alpha = B ∗ psi"""
+    return to_cnf(B + [alpha]) == to_cnf(B + [psi])
+
+# Define the superexpansion postulate function
+def superexpansion(B, alpha, psi):
+    """Superexpansion postulate: B ∗ (alpha ∧ psi) ⊆ (B ∗ alpha) + psi"""
+    return to_cnf(B + [alpha & psi]).issubset(to_cnf(B + [alpha]) + [psi])
+
+# Define the subexpansion postulate function
+def subexpansion(B, alpha, psi):
+    """Subexpansion postulate: If ¬psi /∈ B ∗ alpha, then (B ∗ alpha) + psi ⊆ B ∗ (alpha ∧ psi)"""
+    return Not(psi) not in to_cnf(B + [alpha]) or to_cnf(to_cnf(B + [alpha]) + [psi]).issubset(to_cnf(B + [alpha & psi]))
+
+# Define a function to check if all postulates are satisfied
+def satisfies_all_postulates(B, alpha, psi=None):
+    """Check if the revised belief base satisfies all AGM postulates"""
+    postulates = [closure, success, inclusion, vacuity, consistency, extensionality, superexpansion, subexpansion]
+    for postulate in postulates:
+        if not postulate(B, alpha, psi):
+            return False, postulate.__doc__.split(":")[0].strip()  # Return the failed postulate
+    return True, None  # All postulates are satisfied
+
+# Example usage
 
 
-    def contract(self, statement):
-        print("Beliefs before contraction:", self.beliefs)
-        if statement in self.beliefs:
-            self.beliefs.remove(statement)
-            print("Removed:", statement)
-        if Not(statement) in self.beliefs:
-            self.beliefs.remove(Not(statement))
-            print("Removed:", Not(statement))
-        print("Beliefs after contraction:", self.beliefs)# Remove the negation of the statement as well
-
-    def expand(self, statement):
-        self.beliefs.add(statement)
-
-    def check_AGMP_postulates(self, belief, action):
-        # AGM Success Postulate: If φ is already believed, it remains believed after revision.
-        if action == 'revision':
-            if belief in self.beliefs:
-                return True
-        # AGM Inclusion Postulate: If φ is believed after revision, it was either believed before or has been added.
-        elif action == 'revision' or action == 'expansion':
-            if belief in self.beliefs:
-                return True
-            else:
-                return False
-        # AGM Vacuity Postulate: If φ is not believed after contraction, it was not believed before.
-        elif action == 'contraction':
-            if belief not in self.beliefs:
-                return True
-            else:
-                return False
-        # AGM Consistency Postulate: After a revision, the new belief set is consistent if the new belief φ is consistent.
-        elif action == 'revision':
-            new_beliefs = self.beliefs.copy()
-            new_beliefs.add(belief)
-            combined_cnf = And(*[to_cnf(b) for b in new_beliefs])
-            return combined_cnf != False
-        # AGM Extensionality Postulate: Two belief sets remain identical after revision with logically equivalent sentences.
-        elif action == 'revision':
-            for b in self.beliefs:
-                if Equivalent(b, belief) not in self.beliefs:
-                    return False
-            return True
-        else:
-            return False
-
-
-
-def pl_resolution(KB, alpha):
-    combined_cnf = And(to_cnf(KB), to_cnf(Not(alpha)))
+def pl_resolution(KB, alpha):  # same as in book figure 7.13
+    KB = sympify(KB)
+    alpha = sympify(alpha)
+    combined_cnf = And(sympy.to_cnf(KB), sympy.to_cnf(Not(alpha)))
 
     clauses = set(combined_cnf.args)
     new_clauses = set()
@@ -107,7 +88,7 @@ def pl_resolve(ci, cj):
     for i in _ci:
         for j in _cj:
             if i == Not(j) or Not(i) == j:
-                new_disjuncts = (_ci | _cj) - {i, j}
+                new_disjuncts = (_ci | _cj) - {i, j}  # modus ponens
                 resolvents.add(Or(*new_disjuncts) if new_disjuncts else False)
     return resolvents
 
@@ -117,57 +98,55 @@ def expand(KB, alpha):
 
 
 def contract(KB, alpha):
-    if Not(alpha) in KB.beliefs:
-        KB.remove_belief(alpha)
-        KB.remove_belief(Not(alpha))
     return KB
+    # todo
 
 
-def revise(KB, alpha):
-    if pl_resolution(KB, alpha):
-        KB.contract(alpha)
-        KB.contract(Not(alpha))
-    return KB
+def revise(KB, alpha):  # levi identity
+    if pl_resolution(KB, alpha):  # tautology check
+        return KB
+
+    contracted_kb = contract(KB, Not(alpha))
+    expanded_kb = expand(contracted_kb, alpha)
+
+    return expanded_kb
 
 
 a = symbols('a')
 b = symbols('b')
 c = symbols('c')
 
+expression1 = (a >> b) & a
+expression2 = c
+
+# print(revise(expression1, expression2))
+
 # Set up an initial list for storing beliefs
-knowledge_base = BeliefBase()
+knowledge_base = []
 
+# Add a new belief to the knowledge base
 def include_belief(knowledge_base, new_belief):
-    if new_belief is not None:
-        # Check if the belief or its negation is already present
-        if new_belief in knowledge_base.beliefs:
-            print("Belief already present:", new_belief)
-            return
-        if Not(new_belief) in knowledge_base.beliefs:
-            print("Negation of belief already present:", Not(new_belief))
-            # Remove the conflicting belief
-            knowledge_base.beliefs.remove(Not(new_belief))
-
-        # Add the new belief to the knowledge base
-        knowledge_base.add_belief(new_belief)
-
-
+    if knowledge_base:
+        # Combine all beliefs in the knowledge base into a single belief
+        combined_belief = And(*knowledge_base)
+        # Revise the combined belief with the new belief
+        revised_belief = revise(combined_belief, new_belief)
+        # Clear the knowledge base and add the revised belief to it
+        knowledge_base.clear()
+        knowledge_base.append(revised_belief)
+    else:
+        knowledge_base.append(new_belief)
 
 # Show all beliefs in the knowledge base
 def show_beliefs(knowledge_base):
     print("\nKnowledge Base Contains:")
-    knowledge_base.display_beliefs()
+    print(knowledge_base)
 
 
 # Remove all beliefs from the knowledge base
-def reset_beliefs(knowledge_base):
+def reset_beleifs(knowledge_base):
     print("\nResetting the knowledge base")
-    knowledge_base.beliefs.clear()
-
-# Check logical entailment of a belief
-def check_entailment(knowledge_base, belief):
-    result = knowledge_base.logical_entailment(belief)
-    print(f"The belief '{belief}' is entailed by the knowledge base: {result}")
+    knowledge_base.clear()
 
 # Function to capture the user's command
 def user_command():
@@ -181,10 +160,8 @@ def user_command():
 
 # Interpret and convert user input to a symbolic expression
 def interpret_belief(input_belief):
-    belief_expr = sympify(str(input_belief))
-    return belief_expr
-
-
+    # This needs to be expanded based on how complex the input can be
+    return sympify(input_belief)
 
 # Loop to interact with the belief revision agent
 def interact_with_agent():
@@ -194,6 +171,7 @@ def interact_with_agent():
         if user_choice == "1":
             print("-----------------------")
             belief_input = input("Enter the new belief: ")
+
             try:
                 belief_expr = interpret_belief(belief_input)
                 include_belief(knowledge_base, belief_expr)
@@ -202,11 +180,16 @@ def interact_with_agent():
         elif user_choice == "2":
             show_beliefs(knowledge_base)
         elif user_choice == "3":
-            reset_beliefs(knowledge_base)
+            reset_beleifs(knowledge_base)
         elif user_choice == "4":
-            belief_input = input("Enter the belief to check entailment: ")
-            belief_expr = interpret_belief(belief_input)
-            check_entailment(knowledge_base, belief_expr)
+            alpha = input("Enter alpha: ")
+            psi = input("Enter psi: ")
+            result, failed_postulate = satisfies_all_postulates(knowledge_base, alpha, psi)
+            if result:
+                print("\nRevised belief base:", knowledge_base)
+            else:
+                print("\nRevision rejected: Failed postulate:", failed_postulate)
+        
         elif user_choice == "5":
             stop_agent = True
         else:
