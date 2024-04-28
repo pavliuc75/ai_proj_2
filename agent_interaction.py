@@ -28,13 +28,13 @@ def interact_with_agent():
 
             try:
                 belief_expr = interpret_belief(belief_input)
-                include_belief(knowledge_base, belief_expr)
+                include_belief(belief_expr)
             except SympifyError:
                 print("Could not interpret the belief.")
         elif user_choice == "2":
-            show_beliefs(knowledge_base)
+            show_beliefs()
         elif user_choice == "3":
-            reset_beliefs(knowledge_base)
+            reset_beliefs()
         elif user_choice == "4":
             alpha = input("Enter alpha: ")
             psi = input("Enter psi: ")

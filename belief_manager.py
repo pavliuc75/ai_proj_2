@@ -56,12 +56,12 @@ def revise(KB, alpha):  # levi identity
 # print(revise(expression1, expression2))
 
 # Add a new belief to the knowledge base
-def include_belief(kb, new_belief):
+def include_belief(new_belief):
     global knowledge_base
     global belief_age
     if knowledge_base:
         # Revise the combined belief with the new belief
-        revised_kb = revise(kb, new_belief)
+        revised_kb = revise(knowledge_base, new_belief)
         knowledge_base.clear()
         knowledge_base = revised_kb
     else:
@@ -70,12 +70,12 @@ def include_belief(kb, new_belief):
         knowledge_base.append((new_belief, belief_age))
 
 # Show all beliefs in the knowledge base
-def show_beliefs(knowledge_base):
+def show_beliefs():
     print("\nKnowledge Base Contains:")
     print(knowledge_base)
 
 
 # Remove all beliefs from the knowledge base
-def reset_beliefs(knowledge_base):
+def reset_beliefs():
     print("\nResetting the knowledge base")
     knowledge_base.clear()
