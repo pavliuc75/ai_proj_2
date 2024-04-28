@@ -100,7 +100,6 @@ expression2 = c
 
 # print(revise(expression1, expression2))
 
-# ------------ ADRIAN ---------------#
 # Set up an initial list for storing beliefs
 
 
