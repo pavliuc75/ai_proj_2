@@ -1,5 +1,6 @@
 from sympy import *
 from belief_manager import include_belief, show_beliefs, reset_beliefs, knowledge_base
+from agm_checks import *
 
 # Function to capture the user's command
 def user_command():
@@ -7,7 +8,8 @@ def user_command():
     print("1) Add a belief")
     print("2) Show beliefs")
     print("3) Reset the belief base")
-    print("4) Exit the program")
+    print("4) Check against AGM postulates")
+    print("5) Exit the program")
     return input("Please choose an action: ").strip().lower()
 
 # Interpret and convert user input to a symbolic expression
@@ -34,8 +36,14 @@ def interact_with_agent():
         elif user_choice == "3":
             reset_beliefs(knowledge_base)
         elif user_choice == "4":
+            alpha = input("Enter alpha: ")
+            psi = input("Enter psi: ")
+            result, failed_postulate = satisfies_all_postulates(knowledge_base, alpha, psi)
+            if result:
+                print("\nRevised belief base:", knowledge_base)
+            else:
+                print("\nRevision rejected: Failed postulate:", failed_postulate)
+        elif user_choice == "5":
             stop_agent = True
         else:
             print("Action not recognized")
-
-
